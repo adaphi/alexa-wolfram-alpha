@@ -16,11 +16,11 @@ An example Alexa Skill to query Wolfram Alpha, written in Python.
      instructions](https://developer.amazon.com/public/solutions/alexa/alexa-skills-kit/docs/developing-an-alexa-skill-as-a-lambda-function)
      to give you a hand
    - Put your Wolfram Alpha AppID into an environment variable called "WOLFRAM_ID" and also put your Alexa Skill Identifier in an environement variable called "SKILL_ID". For help view the [documentation](http://docs.aws.amazon.com/lambda/latest/dg/env_variables.html)
-   - You can use `test_event.json` as your test template
+   - You can use the provided test events to test your lambda
    - Consider extending the timeout beyond the default of 3 seconds (I raised mine to 10, which is likely excessive, but eliminated some sporadic errors e.g. [#1](https://github.com/n8henrie/alexa-wolfram-alpha/issues/1))
 1. Create a new [Alexa
    Skill](https://developer.amazon.com/edw/home.html#/skill/create) using
-   `intent_schema.json` and `sample_utterances.txt`
+   `intent_schema.json`, `slot_types_GEN.txt`, and `sample_utterances.txt`
 1. Test that it's working from the web interface during the creation of the
    skill
 1. Test that it's working with your Echo
