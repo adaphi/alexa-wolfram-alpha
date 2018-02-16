@@ -7,8 +7,8 @@ For additional samples, visit the Alexa Skills Kit Getting Started guide at
 http://amzn.to/1LGWsLG
 """
 
-from __future__ import print_function
 import os
+import logging
 import xml.etree.ElementTree as etree
 try:
     from urllib.request import urlopen
@@ -20,12 +20,14 @@ except ImportError:
 
 __version__ = 'v0.1.2'
 
+logger = logging.getLogger()
+logger.setLevel(logging.DEBUG)
 
 def lambda_handler(event, context):
     """ Route the incoming request based on type (LaunchRequest, IntentRequest,
     etc.) The JSON body of the request is provided in the event parameter.
     """
-    print("event.session.application.applicationId=" +
+    logger.debug("event.session.application.applicationId=" +
           event['session']['application']['applicationId'])
 
     """
@@ -52,7 +54,7 @@ def lambda_handler(event, context):
 def on_session_started(session_started_request, session):
     """ Called when the session starts """
 
-    print("on_session_started requestId=" +
+    logger.debug("on_session_started requestId=" +
           session_started_request['requestId'] +
           ", sessionId=" + session['sessionId'])
 
@@ -62,7 +64,7 @@ def on_launch(launch_request, session):
     want
     """
 
-    print("on_launch requestId=" + launch_request['requestId'] +
+    logger.debug("on_launch requestId=" + launch_request['requestId'] +
           ", sessionId=" + session['sessionId'])
     # Dispatch to your skill's launch
     return get_welcome_response()
@@ -71,7 +73,7 @@ def on_launch(launch_request, session):
 def on_intent(intent_request, session):
     """ Called when the user specifies an intent for this skill """
 
-    print("on_intent requestId=" + intent_request['requestId'] +
+    logger.debug("on_intent requestId=" + intent_request['requestId'] +
           ", sessionId=" + session['sessionId'])
 
     intent = intent_request['intent']
@@ -86,10 +88,9 @@ def on_intent(intent_request, session):
 
 def on_session_ended(session_ended_request, session):
     """ Called when the user ends the session.
-
     Is not called when the skill returns should_end_session=true
     """
-    print("on_session_ended requestId=" + session_ended_request['requestId'] +
+    logger.debug("on_session_ended requestId=" + session_ended_request['requestId'] +
           ", sessionId=" + session['sessionId'])
     # add cleanup logic here
 
@@ -124,7 +125,14 @@ def ask_wolfram_alpha(intent, session):
     appid = os.environ["WOLFRAM_ID"]
 
     query = intent['slots']['response'].get('value')
+
+    # Alexa will always interpret "pi" as "pie"
+    # Wolfram is likely to want the opposite, so let's fix that
+    query = query.replace("pie", "pi")
+
     if query:
+
+        logger.info("ask_wolfram_alpha query: " + query)
 
         payload = {
             'input': query,
@@ -134,16 +142,35 @@ def ask_wolfram_alpha(intent, session):
         }
 
         resp = urlopen(api_root + "query?" + urlencode(payload))
-        tree = etree.fromstring(resp.read())
+        raw = resp.read()
+        logger.debug(raw)
+        tree = etree.fromstring(raw)
 
         try:
             # Return first subpod's plaintext
-            result = next(pod.find("subpod").find("plaintext").text
-                          for pod in tree
-                          if pod.attrib.get('title') == "Result")
+            answer = next(pod for pod in tree if pod.attrib.get('title') in ["Result", "Decimal approximation", "Limit"])
+
+            if answer.attrib.get('title') == "Result":
+                result = answer.find("subpod").find("plaintext").text
+
+            elif answer.attrib.get('title') == "Decimal approximation":
+                _s = answer.find("subpod").find("plaintext").text.replace('...', '')
+                if 'i' not in _s:
+                    _n = round(float(_s), 4)
+                else:
+                    _n_1, _, _n_2 = _s.split()[:3]
+                    _n = "{} + {} i".format(round(float(_n_1), 2), round(float(_n_2), 2))
+                result = "Approximately {}".format(_n)
+
+            elif answer.attrib.get('title') == "Limit":
+                _s = answer.find("subpod").find("plaintext").text
+                result = _s[_s.index('=')+2:]
+
             should_end_session = True
         except StopIteration:
             result = "No results for {}".format(query)
+
+        logger.info("ask_wolfram_alpha result: " + result)
 
         speech_output = result
 
