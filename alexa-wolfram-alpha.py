@@ -155,10 +155,13 @@ def ask_wolfram_alpha(intent, session):
 
             elif answer.attrib.get('title') == "Decimal approximation":
                 _s = answer.find("subpod").find("plaintext").text.replace('...', '')
+                _s = _s.split()
                 if 'i' not in _s:
-                    _n = round(float(_s), 4)
+                    _n = round(float(_s[0]), 4)
+                elif _s[1] == 'i':
+                    _n = "{} i".format(round(float(_s[0]), 4))
                 else:
-                    _n_1, _, _n_2 = _s.split()[:3]
+                    _n_1, _, _n_2 = _s[:3]
                     _n = "{} + {} i".format(round(float(_n_1), 2), round(float(_n_2), 2))
                 result = "Approximately {}".format(_n)
 
