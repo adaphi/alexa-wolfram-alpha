@@ -1,0 +1,27 @@
+{
+  "session": {
+    "new": false,
+    "sessionId": "session1234",
+    "attributes": {},
+    "user": {
+      "userId": null
+    },
+    "application": {
+      "applicationId": "amzn1.ask.skill.4338a021-dc02-4615-8bd8-eba255f31262"
+    }
+  },
+  "version": "1.0",
+  "request": {
+    "intent": {
+      "slots": {
+        "general_query": {
+          "name": "general_query",
+          "value": "limit of 1 over x as x tends to infinity"
+        }
+      },
+      "name": "wa_query"
+    },
+    "type": "IntentRequest",
+    "requestId": "request5678"
+  }
+}
