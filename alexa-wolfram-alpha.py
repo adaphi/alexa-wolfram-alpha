@@ -124,7 +124,7 @@ def ask_wolfram_alpha(intent, session):
 
     appid = os.environ["WOLFRAM_ID"]
 
-    query = intent['slots']['response'].get('value')
+    query = intent['slots']['general_query'].get('value')
 
     # Alexa will always interpret "pi" as "pie"
     # Wolfram is likely to want the opposite, so let's fix that

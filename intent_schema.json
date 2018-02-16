@@ -4,8 +4,8 @@
             "intent": "wa_query",
             "slots": [
                 {
-                    "name": "response",
-                    "type": "LITERAL"
+                    "name": "general_query",
+                    "type": "GEN"
                 }
             ]
         }
